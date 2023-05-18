@@ -9,28 +9,23 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "linkedlist.h"
 #define MAX_SINTOMAS 10
 #define MAX_CHAR 50
 
 // Estructura para representar una enfermedad
-typedef struct {
-
-    char sintoma[MAX_CHAR];
-    int relevancia;
-
-} Sintoma;
 
 typedef struct {
 
     char nombre[MAX_CHAR];
-    Sintoma* sintomas;
+    LinkedList  sintomas;
     int num_sintomas;
 
-} Enfermedad;
+} Disease;
 
 typedef struct {
 
-    Enfermedad *enfermedades;
+    Disease *enfermedades;
     int num_enfermedades;
 
 } CargaEnfermedades;
@@ -87,6 +82,6 @@ void actualizarEnfermedades(char nombre_archivo[], CargaEnfermedades* totalEnfer
 * @Retorn: void
 *
 ************************************************/
-void helpMe(Enfermedad enfermedades[], int num_enfermedades);
+//void helpMe(Disease enfermedades[], int num_enfermedades);
 
 #endif //MYDOCTOR_ENFERMEDADES_H

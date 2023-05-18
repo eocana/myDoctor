@@ -38,14 +38,19 @@ int buscarEnfermedad(char nombre[], CargaEnfermedades* totalEnfermedades) {
 * @Retorn: El índice del síntoma en el array si se encuentra, -1 en caso contrario.
 *
 ************************************************/
-int buscarSintoma(char sintoma[], Sintoma sintomas[], int num_sintomas) {
-    for (int i = 0; i < num_sintomas; i++) {
-        if (strcmp(sintomas[i].sintoma, sintoma) == 0) {
-            return i;
+int buscarSintoma(char sintoma[], LinkedList* sintomas) {
+    LINKEDLIST_goToHead(sintomas);
+    while (!LINKEDLIST_isAtEnd(*sintomas)) {
+
+        if (strcmp(LINKEDLIST_get(sintomas).sintoma, sintoma) == 0) {
+            return 1;
         }
+
+        LINKEDLIST_next(sintomas);
     }
     return -1;
 }
+
 
 /***********************************************
 *
@@ -55,33 +60,34 @@ int buscarSintoma(char sintoma[], Sintoma sintomas[], int num_sintomas) {
 * @Retorn: void
 *
 ************************************************/
-void cargarEnfermedades( CargaEnfermedades *totalEnfermedades, char nombre_archivo[]) {
-
+void cargarEnfermedades(CargaEnfermedades* totalEnfermedades, char nombre_archivo[]) {
     char linea[MAX_CHAR];
     FILE* archivo = fopen(nombre_archivo, "r");
 
     if (archivo == NULL) {
         printf("ERROR: Disease file not found");
+        return;
     }
 
-    // Leer número de enfermedades en el fichero
+    // Leer número de enfermedades en el archivo
     fgets(linea, MAX_CHAR, archivo);
-    totalEnfermedades->num_enfermedades = atoi(linea);
-    totalEnfermedades->enfermedades = malloc(sizeof (Enfermedad)*totalEnfermedades->num_enfermedades);
+    int num_enfermedades = atoi(linea);
 
-    // Leer cada enfermedad del fichero
-    for (int i = 0; i < totalEnfermedades->num_enfermedades; i++) {
-        Enfermedad enfermedad;
+    // Asignar memoria para el arreglo de enfermedades
+    totalEnfermedades->enfermedades = (Disease*)malloc(sizeof(Disease) * num_enfermedades);
+    totalEnfermedades->num_enfermedades = num_enfermedades;
+
+    // Leer cada enfermedad del archivo
+    for (int i = 0; i < num_enfermedades; i++) {
+
+        Disease enfermedad;
         enfermedad.num_sintomas = 0;
-        Sintoma nuevo_sintoma;
-        char sintoma[MAX_CHAR];
-        int num_sintomas, j, len, relevancia;
-
+        enfermedad.sintomas = LINKEDLIST_Create(); // Crear la lista de síntomas para la enfermedad actual
+        LINKEDLIST_goToHead(&enfermedad.sintomas); // Poner el puntero de la lista al inicio
         // Leer nombre de la enfermedad
         fgets(linea, MAX_CHAR, archivo);
+        int len = strlen(linea);
 
-        // Eliminar el caracter '\n' de la línea leída
-        len = strlen(linea);
         if (linea[len - 1] == '\n') {
             linea[len - 1] = '\0';
         }
@@ -90,36 +96,44 @@ void cargarEnfermedades( CargaEnfermedades *totalEnfermedades, char nombre_archi
 
         // Leer número de síntomas
         fgets(linea, MAX_CHAR, archivo);
-        num_sintomas = atoi(linea);
-        enfermedad.sintomas = malloc(sizeof (Sintoma)*num_sintomas);
+        int num_sintomas = atoi(linea);
 
         // Leer cada síntoma de la enfermedad
-        for (j = 0; j < num_sintomas; j++) {
+        for (int j = 0; j < num_sintomas; j++) {
+
             fgets(linea, MAX_CHAR, archivo);
+
             len = strlen(linea);
+
             if (linea[len - 1] == '\n') {
                 linea[len - 1] = '\0';
             }
 
-            // Leer nombre del síntoma
+            // Leer nombre del síntoma y relevancia
+            char sintoma[MAX_CHAR];
+            int relevancia;
+
             sscanf(linea, "%[^()] (%d)", sintoma, &relevancia);
 
             // Crear nuevo síntoma
-            strcpy(nuevo_sintoma.sintoma, sintoma);
-            nuevo_sintoma.relevancia = relevancia;
+            Sintoma symptom;
+            strcpy(symptom.sintoma, sintoma);
+            symptom.relevancia = relevancia;
 
-            // Agregar síntoma a la enfermedad
-            enfermedad.sintomas[enfermedad.num_sintomas++] = nuevo_sintoma;
+            // Agregar síntoma a la lista de síntomas de la enfermedad
+            LINKEDLIST_add(&(enfermedad.sintomas), symptom);
+            enfermedad.num_sintomas++;
         }
 
-        // Agregar enfermedad a la estructura resultado
+        // Agregar enfermedad al arreglo totalEnfermedades
         totalEnfermedades->enfermedades[i] = enfermedad;
     }
 
     fclose(archivo);
-    printf("Welcome to myDoctor!");
-    printf("\n");
+    printf("Welcome to myDoctor!\n\n");
+
 }
+
 /***********************************************
 *
 * @Finalitat: Mostrar la información de todas las enfermedades en el array de enfermedades.
@@ -128,15 +142,24 @@ void cargarEnfermedades( CargaEnfermedades *totalEnfermedades, char nombre_archi
 * @Retorn: void.
 *
 ************************************************/
-void mostrarEnfermedades(CargaEnfermedades* enfermedades) {
-    for (int i = 0; i < enfermedades->num_enfermedades; i++) {
-        printf("%s (", enfermedades->enfermedades[i].nombre);
-        for (int j = 0; j < enfermedades->enfermedades[i].num_sintomas; j++) {
-            printf("%s#%d", enfermedades->enfermedades[i].sintomas[j].sintoma, enfermedades->enfermedades[i].sintomas[j].relevancia);
-            if (j < enfermedades->enfermedades[i].num_sintomas - 1) {
+void mostrarEnfermedades(CargaEnfermedades* totalEnfermedades) {
+    for (int i = 0; i < totalEnfermedades->num_enfermedades; i++) {
+        Disease enfermedad = totalEnfermedades->enfermedades[i];
+        printf("%s (", enfermedad.nombre);
+
+        LinkedList sintomas = enfermedad.sintomas;
+        LINKEDLIST_goToHead(&sintomas);
+
+        while (!LINKEDLIST_isAtEnd(sintomas)) {
+            Sintoma sintoma = LINKEDLIST_get(&sintomas);
+            printf("%s#%d", sintoma.sintoma, sintoma.relevancia);
+
+            LINKEDLIST_next(&sintomas);
+            if (!LINKEDLIST_isAtEnd(sintomas)) {
                 printf(" | ");
             }
         }
+
         printf(")\n");
     }
 }
@@ -164,28 +187,26 @@ void actualizarEnfermedades(char nombre_archivo[], CargaEnfermedades* totalEnfer
         while (fread(&registro, sizeof(FileDisease), 1, archivo) == 1) {
             idx_enfermedad = buscarEnfermedad(registro.disease, totalEnfermedades);
             if (idx_enfermedad != -1) {
-                idx_sintoma = buscarSintoma(registro.symptom, totalEnfermedades->enfermedades[idx_enfermedad].sintomas, totalEnfermedades->enfermedades[idx_enfermedad].num_sintomas);
+                Disease* enfermedad = &(totalEnfermedades->enfermedades[idx_enfermedad]);
+                idx_sintoma = buscarSintoma(registro.symptom, &enfermedad->sintomas);
+
                 if (idx_sintoma != -1) {
-                    if (registro.relevance != totalEnfermedades->enfermedades[idx_enfermedad].sintomas[idx_sintoma].relevancia) {
-                        totalEnfermedades->enfermedades[idx_enfermedad].sintomas[idx_sintoma].relevancia = registro.relevance;
-                        num_actualizadas++;
+                    // Actualizar relevancia del síntoma existente
+                    LINKEDLIST_goToHead(&(enfermedad->sintomas));
+
+                    for (int i = 0; i <= idx_sintoma; i++) {
+                        LINKEDLIST_next(&(enfermedad->sintomas));
                     }
+
+                    enfermedad->sintomas.previous->next->element.relevancia = registro.relevance;
+                    num_actualizadas++;
+
                 } else {
                     // Agregar nuevo síntoma a la enfermedad
-                    if (totalEnfermedades->enfermedades[idx_enfermedad].num_sintomas == 0) {
-                        totalEnfermedades->enfermedades[idx_enfermedad].sintomas = malloc(sizeof(Sintoma));
-                    } else {
-                        totalEnfermedades->enfermedades[idx_enfermedad].sintomas = realloc(totalEnfermedades->enfermedades[idx_enfermedad].sintomas, (totalEnfermedades->enfermedades[idx_enfermedad].num_sintomas + 1) * sizeof(Sintoma));
-                    }
-                    if (totalEnfermedades->enfermedades[idx_enfermedad].sintomas == NULL) {
-                        printf("ERROR: Allocation of 'enfermedades[idx_enfermedad].sintomas' failed []");
-                        fclose(archivo);
-                        return;
-                    }
                     Sintoma sintoma;
                     strcpy(sintoma.sintoma, registro.symptom);
                     sintoma.relevancia = registro.relevance;
-                    totalEnfermedades->enfermedades[idx_enfermedad].sintomas[totalEnfermedades->enfermedades[idx_enfermedad].num_sintomas++] = sintoma;
+                    LINKEDLIST_add(&(enfermedad->sintomas), sintoma);
                     num_anadidas++;
                 }
             } else {
@@ -197,123 +218,124 @@ void actualizarEnfermedades(char nombre_archivo[], CargaEnfermedades* totalEnfer
 
         printf("%d diseases ignored\n", num_ignoradas);
         printf("%d symptoms updated\n", num_actualizadas);
-        printf("%d symptons added\n", num_anadidas);
+        printf("%d symptoms added\n", num_anadidas);
         printf("\n");
     }
 }
 
-/***********************************************
-*
-* @Finalitat: Pedir al usuario una lista de síntomas y mostrar las enfermedades posibles según esos síntomas.
-* @Paràmetres: enfermedades: el array de estructuras Enfermedad.
-*              num_enfermedades: el número de elementos en el array de enfermedades.
-* @Retorn: void.
-*
-************************************************/
-void helpMe(Enfermedad enfermedades[], int num_enfermedades) {
 
-    char sintomas[MAX_CHAR];
-    int idx_sintoma = 0;
-    int idx_char = 0;
-    int num_sintomas = 1;
-    int k = 0, j = 0, i = 0, u = 0, a = 0;
-
-    printf("Enter your symptoms:");
-    scanf("%s", sintomas);
-
-    // Obtener número de síntomas del usuario
-    for (i = 0; sintomas[i] != '\0'; i++) {
-        if (sintomas[i] == '+') {
-            num_sintomas++;
-        }
-    }
-
-    // Crear array de síntomas del usuario
-    SintomaUsuario usuario_sintomas[num_sintomas];
-
-    //bucle que separa los sintomas en base +
-    for (i = 0; sintomas[i] != '\0'; i++) {
-        if (sintomas[i] == '+') {
-            usuario_sintomas[idx_sintoma].nombre[idx_char] = '\0';
-            usuario_sintomas[idx_sintoma].relevancia = 0;
-            idx_sintoma++;
-            idx_char = 0;
-        } else {
-            usuario_sintomas[idx_sintoma].nombre[idx_char] = sintomas[i];
-            usuario_sintomas[idx_sintoma].relevancia = 0;
-            idx_char++;
-        }
-    }
-
-    // nos aseguramos que el final se ponga \0
-    usuario_sintomas[idx_sintoma].nombre[idx_char] = '\0';
-    usuario_sintomas[idx_sintoma].relevancia = 0;
-
-    // Obtener puntuación de cada enfermedad
-    int *puntuaciones = (int*)malloc(num_enfermedades * sizeof(int));
-    for (u = 0; u < num_enfermedades; u++) {
-        puntuaciones[u] = 0;
-        for (j = 0; j < num_sintomas; j++) {
-            for (k = 0; k < enfermedades[u].num_sintomas; k++) {
-                int len = strlen(enfermedades[u].sintomas[k].sintoma);
-                for (a = 0; a < len; a++) {
-                    if (enfermedades[u].sintomas[k].sintoma[a] == ' ') {
-                        enfermedades[u].sintomas[k].sintoma[a] = '\0';
-                        a = len;
-                    }
-                }
-                if (strcmp(usuario_sintomas[j].nombre, enfermedades[u].sintomas[k].sintoma) == 0) {
-                    puntuaciones[u] += enfermedades[u].sintomas[k].relevancia;
-                }
-            }
-        }
-    }
-// Ordenar enfermedades por puntuación (de mayor a menor) [ordenamiento burbuja]
-    for (i = 0; i < num_enfermedades - 1; i++) {
-        for (j = 0; j < num_enfermedades - i - 1; j++) {
-            if (puntuaciones[j+1] > puntuaciones[j]) {
-
-                // Intercambiar puntuaciones
-                int temp_puntuacion = puntuaciones[j];
-                puntuaciones[j] = puntuaciones[j+1];
-                puntuaciones[j+1] = temp_puntuacion;
-
-                // Intercambiar enfermedades
-                Enfermedad temp_enfermedad = enfermedades[j];
-                enfermedades[j] = enfermedades[j+1];
-                enfermedades[j+1] = temp_enfermedad;
-            }
-        }
-    }
-
-// Mostrar enfermedades con puntuación positiva
-    int num_positivas = 0;
-    for (i = 0; i < num_enfermedades; i++) {
-
-        if (puntuaciones[i] > 0) {
-
-            num_positivas++;
-
-            if(num_positivas == 1){
-                printf("Most probable diseases:\n");
-            }
-
-            printf("Total relavance %d: %s\n", puntuaciones[i], enfermedades[i].nombre);
-        }
-        if (num_positivas == 0) {
-            i = num_enfermedades;
-            printf("No diseases found!\n");
-        }
-    }
-    printf("\n");
-
-}
-
-
-//Al final no lo hago servir pero lo mantego por si en
-void liberarCargaEnfermedades(CargaEnfermedades* totalEnfermedades) {
-    for (int i = 0; i < totalEnfermedades->num_enfermedades; i++) {
-        free(totalEnfermedades->enfermedades[i].sintomas);
-    }
-    free(totalEnfermedades->enfermedades);
-}
+///***********************************************
+//*
+//* @Finalitat: Pedir al usuario una lista de síntomas y mostrar las enfermedades posibles según esos síntomas.
+//* @Paràmetres: enfermedades: el array de estructuras Disease.
+//*              num_enfermedades: el número de elementos en el array de enfermedades.
+//* @Retorn: void.
+//*
+//************************************************/
+//void helpMe(Disease enfermedades[], int num_enfermedades) {
+//
+//    char sintomas[MAX_CHAR];
+//    int idx_sintoma = 0;
+//    int idx_char = 0;
+//    int num_sintomas = 1;
+//    int k = 0, j = 0, i = 0, u = 0, a = 0;
+//
+//    printf("Enter your symptoms:");
+//    scanf("%s", sintomas);
+//
+//    // Obtener número de síntomas del usuario
+//    for (i = 0; sintomas[i] != '\0'; i++) {
+//        if (sintomas[i] == '+') {
+//            num_sintomas++;
+//        }
+//    }
+//
+//    // Crear array de síntomas del usuario
+//    SintomaUsuario usuario_sintomas[num_sintomas];
+//
+//    //bucle que separa los sintomas en base +
+//    for (i = 0; sintomas[i] != '\0'; i++) {
+//        if (sintomas[i] == '+') {
+//            usuario_sintomas[idx_sintoma].nombre[idx_char] = '\0';
+//            usuario_sintomas[idx_sintoma].relevancia = 0;
+//            idx_sintoma++;
+//            idx_char = 0;
+//        } else {
+//            usuario_sintomas[idx_sintoma].nombre[idx_char] = sintomas[i];
+//            usuario_sintomas[idx_sintoma].relevancia = 0;
+//            idx_char++;
+//        }
+//    }
+//
+//    // nos aseguramos que el final se ponga \0
+//    usuario_sintomas[idx_sintoma].nombre[idx_char] = '\0';
+//    usuario_sintomas[idx_sintoma].relevancia = 0;
+//
+//    // Obtener puntuación de cada enfermedad
+//    int *puntuaciones = (int*)malloc(num_enfermedades * sizeof(int));
+//    for (u = 0; u < num_enfermedades; u++) {
+//        puntuaciones[u] = 0;
+//        for (j = 0; j < num_sintomas; j++) {
+//            for (k = 0; k < enfermedades[u].num_sintomas; k++) {
+//                int len = strlen(enfermedades[u].sintomas[k].sintoma);
+//                for (a = 0; a < len; a++) {
+//                    if (enfermedades[u].sintomas[k].sintoma[a] == ' ') {
+//                        enfermedades[u].sintomas[k].sintoma[a] = '\0';
+//                        a = len;
+//                    }
+//                }
+//                if (strcmp(usuario_sintomas[j].nombre, enfermedades[u].sintomas[k].sintoma) == 0) {
+//                    puntuaciones[u] += enfermedades[u].sintomas[k].relevancia;
+//                }
+//            }
+//        }
+//    }
+//// Ordenar enfermedades por puntuación (de mayor a menor) [ordenamiento burbuja]
+//    for (i = 0; i < num_enfermedades - 1; i++) {
+//        for (j = 0; j < num_enfermedades - i - 1; j++) {
+//            if (puntuaciones[j+1] > puntuaciones[j]) {
+//
+//                // Intercambiar puntuaciones
+//                int temp_puntuacion = puntuaciones[j];
+//                puntuaciones[j] = puntuaciones[j+1];
+//                puntuaciones[j+1] = temp_puntuacion;
+//
+//                // Intercambiar enfermedades
+//                Disease temp_enfermedad = enfermedades[j];
+//                enfermedades[j] = enfermedades[j+1];
+//                enfermedades[j+1] = temp_enfermedad;
+//            }
+//        }
+//    }
+//
+//// Mostrar enfermedades con puntuación positiva
+//    int num_positivas = 0;
+//    for (i = 0; i < num_enfermedades; i++) {
+//
+//        if (puntuaciones[i] > 0) {
+//
+//            num_positivas++;
+//
+//            if(num_positivas == 1){
+//                printf("Most probable diseases:\n");
+//            }
+//
+//            printf("Total relavance %d: %s\n", puntuaciones[i], enfermedades[i].nombre);
+//        }
+//        if (num_positivas == 0) {
+//            i = num_enfermedades;
+//            printf("No diseases found!\n");
+//        }
+//    }
+//    printf("\n");
+//
+//}
+//
+//
+////Al final no lo hago servir pero lo mantego por si en
+//void liberarCargaEnfermedades(CargaEnfermedades* totalEnfermedades) {
+//    for (int i = 0; i < totalEnfermedades->num_enfermedades; i++) {
+//        free(totalEnfermedades->enfermedades[i].sintomas);
+//    }
+//    free(totalEnfermedades->enfermedades);
+//}

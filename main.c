@@ -25,7 +25,7 @@ int main() {
 
      /*
           for (int i = 0; i < totalEnfermedades.num_enfermedades; i++) {
-            printf("Enfermedad %d: %s (%d sintomas)\n", i+1, totalEnfermedades.enfermedades[i].nombre, totalEnfermedades.enfermedades[i].num_sintomas);
+            printf("Disease %d: %s (%d sintomas)\n", i+1, totalEnfermedades.enfermedades[i].nombre, totalEnfermedades.enfermedades[i].num_sintomas);
           }
 
      */
@@ -43,7 +43,7 @@ int main() {
                 actualizarEnfermedades(nombre_bin, &totalEnfermedades); //actualizamos
                 break;
             case 3:
-                helpMe(totalEnfermedades.enfermedades, totalEnfermedades.num_enfermedades); //mostrar enfermedades en base sintomas
+                //helpMe(totalEnfermedades.enfermedades, totalEnfermedades.num_enfermedades); //mostrar enfermedades en base sintomas
                 break;
             case 4:
                 printf("\nStay healthy!");

@@ -67,6 +67,12 @@ build CMakeFiles/myDoctor.dir/enfermedades.c.obj: C_COMPILER__myDoctor_Debug C$:
   OBJECT_DIR = CMakeFiles\myDoctor.dir
   OBJECT_FILE_DIR = CMakeFiles\myDoctor.dir
 
+build CMakeFiles/myDoctor.dir/linkedlist.c.obj: C_COMPILER__myDoctor_Debug C$:/Users/Eric/CLionProjects/myDoctor/linkedlist.c || cmake_object_order_depends_target_myDoctor
+  DEP_FILE = CMakeFiles\myDoctor.dir\linkedlist.c.obj.d
+  FLAGS = -g -fdiagnostics-color=always -std=gnu11
+  OBJECT_DIR = CMakeFiles\myDoctor.dir
+  OBJECT_FILE_DIR = CMakeFiles\myDoctor.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target myDoctor
@@ -75,7 +81,7 @@ build CMakeFiles/myDoctor.dir/enfermedades.c.obj: C_COMPILER__myDoctor_Debug C$:
 #############################################
 # Link the executable myDoctor.exe
 
-build myDoctor.exe: C_EXECUTABLE_LINKER__myDoctor_Debug CMakeFiles/myDoctor.dir/main.c.obj CMakeFiles/myDoctor.dir/menu.c.obj CMakeFiles/myDoctor.dir/enfermedades.c.obj
+build myDoctor.exe: C_EXECUTABLE_LINKER__myDoctor_Debug CMakeFiles/myDoctor.dir/main.c.obj CMakeFiles/myDoctor.dir/menu.c.obj CMakeFiles/myDoctor.dir/enfermedades.c.obj CMakeFiles/myDoctor.dir/linkedlist.c.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\myDoctor.dir
