@@ -32,18 +32,18 @@ int main() {
 
     do {
 
-        opcion = mostrar_menu(); // guardamos la opcion del usuario
+        opcion = mostrarMenu(); // guardamos la opcion del usuario
 
         switch(opcion) {
             case 1:
                 mostrarEnfermedades(&totalEnfermedades); //mostrar como piden
                 break;
             case 2:
-                pedir_nombre_archivo(nombre_bin); //obtener nombre del bin
+                pedirNombreArchivo(nombre_bin); //obtener nombre del bin
                 actualizarEnfermedades(nombre_bin, &totalEnfermedades); //actualizamos
                 break;
             case 3:
-                //helpMe(totalEnfermedades.enfermedades, totalEnfermedades.num_enfermedades); //mostrar enfermedades en base sintomas
+                helpMe(&totalEnfermedades); //mostrar enfermedades en base sintomas
                 break;
             case 4:
                 printf("\nStay healthy!");

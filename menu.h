@@ -17,7 +17,7 @@
 * @Retorn: Retorna la opción del menu que el usuario ha escogido
 *
 ****************/
-int mostrar_menu();
+int mostrarMenu();
 
 /*****************
 *
@@ -26,5 +26,5 @@ int mostrar_menu();
 * @Retorn: void
 *
 ****************/
-void pedir_nombre_archivo(char nombre_archivo[]);
+void pedirNombreArchivo(char nombre_archivo[]);
 #endif //MYDOCTOR_MENU_H

@@ -82,6 +82,6 @@ void actualizarEnfermedades(char nombre_archivo[], CargaEnfermedades* totalEnfer
 * @Retorn: void
 *
 ************************************************/
-//void helpMe(Disease enfermedades[], int num_enfermedades);
+void helpMe(CargaEnfermedades* totalEnfermedades);
 
 #endif //MYDOCTOR_ENFERMEDADES_H
